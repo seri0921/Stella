@@ -205,4 +205,14 @@ public class TrackerHandler : MonoBehaviour
         return relativeRotation;
     }
 
+    // 関節の位置を返す関数
+    public Vector3 GetJointWorldPosition(JointId jointId)
+    {
+        const int skeletonNumber = 0;
+
+        Transform jointTransform = transform.GetChild(skeletonNumber).GetChild((int)jointId);
+
+        return jointTransform.position;
+    }
+
 }
