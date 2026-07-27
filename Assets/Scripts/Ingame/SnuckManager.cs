@@ -6,6 +6,19 @@ using UnityEngine.InputSystem;
 
 public class SnuckManager : MonoBehaviour
 {
+    // ゲームの進行状況を管理するための状態
+    public enum GamePhase
+    {
+        Eating,   // お菓子を食べる
+        Fighting, // モンスター化したうさぎと戦う
+        End       // 終了
+    }
+
+    [Header("フェーズ管理")]
+    public GamePhase Phase = GamePhase.Eating;
+    [TooltipAttribute("各フェーズの制限時間")]
+    public float phaseTimeLimit = 90f;
+
     [Header("プレハブの設定")]
     [Tooltip("出現するオブジェクト")]
     [SerializeField] public GameObject[] snuckPrefabs; // お菓子の配列
@@ -19,23 +32,52 @@ public class SnuckManager : MonoBehaviour
     public Vector3 spawnPosition = new Vector3(0, 0, 0);
     public Vector3 trashPosition = new Vector3(0, -3f, 0);
 
+    [Header("連携スクリプト")]
+    public EnemyManager enemyManager;
+
     private bool running = false;   // 実行中（否）
     private GameObject snuckState;  // お菓子の状態
     private float elapsedTime = 0f; // 経過した時間を計る
+    private float currentTimer;     // 現在の残り自国
 
     // Start is called before the first frame update
     void Start()
     {
+        Phase = GamePhase.Eating;
+        currentTimer = phaseTimeLimit;
         spawn_snuck();
     }
 
     // Update is called once per frame
     void Update()
     {
-        // 右クリックを押したら、お菓子を食べる
-        if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame)
+        if (Phase == GamePhase.Eating)
         {
-            if (snuckState != null && !running) StartCoroutine(destroy_snuckANDfeature_trush());
+            // タイマーを減らす
+            currentTimer -= Time.deltaTime;
+
+            // 右クリックを押したら、お菓子を食べる
+            if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame)
+            {
+                if (snuckState != null && !running) StartCoroutine(destroy_snuckANDfeature_trush());
+            }
+
+            // 1分半経過したらフェーズ切り換え
+            if (currentTimer <= 0) StartFightingPhase();
+        }
+        else if (Phase == GamePhase.Fighting)
+        {
+            // タイマーを減らす
+            currentTimer -= Time.deltaTime;
+
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                if (enemyManager != null) enemyManager.damageMonster();
+            }
+            else if (currentTimer <= 0)
+            {
+                Phase = GamePhase.End;
+            }
         }
     }
 
@@ -51,9 +93,13 @@ public class SnuckManager : MonoBehaviour
     private IEnumerator destroy_snuckANDfeature_trush()
     {
         running = true;
+        // 食べている処理をEnemyManagerへ
+        if (enemyManager != null) enemyManager.SetEatingState(true);
 
         // だんだんお菓子を消す（小さくする）アニメーション
         Vector3 initialScale = snuckState.transform.localScale;
+
+        float elapsedTime = 0f;
 
         // 経過した時間よりも、"お菓子が消えるまで"の時間がかかっていたら
         while (elapsedTime < destroyTime)
@@ -77,7 +123,12 @@ public class SnuckManager : MonoBehaviour
         {
             int trashIndex = Random.Range(0, trashPrefabs.Length);
             Instantiate(trashPrefabs[trashIndex], trashPosition, Quaternion.identity); // Quaternion.identity：回転させない
+
+            // ゴミが増えた処理をEnemyManagerへ
+            if (enemyManager != null) enemyManager.Add();
         }
+
+        if (enemyManager != null) enemyManager.SetEatingState(false);
 
         // 次のお菓子が出るまで待つ
         yield return new WaitForSeconds(1.5f);
@@ -85,5 +136,18 @@ public class SnuckManager : MonoBehaviour
         spawn_snuck();
 
         running = false;
+    }
+
+    private void StartFightingPhase()
+    {
+        Phase = GamePhase.Fighting;
+        currentTimer = phaseTimeLimit;
+
+        // 画面に残っているお菓子があれば消す
+        if (snuckState == null) Destroy(snuckState);
+        running = false;
+
+        // 1分半経ったら、ゴミの数に関係なく強制的にモンスターを変身させる
+        if (enemyManager != null) enemyManager.ForceTransform();
     }
 }
