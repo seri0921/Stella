@@ -7,5 +7,11 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/Scenes/PuppetMaster.unity
-    guid: f8f83b2fa35c63b4498c68984d7b4251
+    guid: 09e4334427f9bfd4eadcbf0dde57d35e
+  - enabled: 1
+    path: Assets/Scenes/Start.unity
+    guid: 240a0c3221c64b645a1c9837fbeb5634
+  - enabled: 1
+    path: Assets/Scenes/Ingame.unity
+    guid: a014f28615963de45ab4117f0c541847
   m_configObjects: {}
