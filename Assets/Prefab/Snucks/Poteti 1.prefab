@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: -846898272635508750}
   - component: {fileID: -7551646470904708358}
   m_Layer: 0
-  m_Name: Poteti
+  m_Name: Poteti 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -63,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 5955844840416208063, guid: e358fdec3a9d1bb4698c9123e8b42f09, type: 3}
+  - {fileID: 2100000, guid: 55f70651c88b30c47bb7014e08868d83, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -112,4 +112,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   trashPrefabs:
   - {fileID: 6197407480373216576, guid: dec0313f50f9d4d40b95e5a3e1f5ac2f, type: 3}
+  - {fileID: 3174301466395456292, guid: 874463cb701d2d84ab8e95ac011f23fd, type: 3}
+  - {fileID: 3174301466395456292, guid: 4b9ead8b2ce0bef42af6f65d3924b00b, type: 3}
   eatAnimDuration: 0.3

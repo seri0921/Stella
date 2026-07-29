@@ -11,10 +11,11 @@ GameObject:
   - component: {fileID: 3174301466395456288}
   - component: {fileID: 3174301466395456291}
   - component: {fileID: 3174301466395456290}
-  - component: {fileID: -846898272635508750}
-  - component: {fileID: -7551646470904708358}
+  - component: {fileID: -6361769919664281562}
+  - component: {fileID: 1875729406693336128}
+  - component: {fileID: 3487625350751977768}
   m_Layer: 0
-  m_Name: Poteti 1
+  m_Name: Tunacan
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28,7 +29,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3174301466395456292}
   m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalPosition: {x: -0, y: 0, z: 90}
   m_LocalScale: {x: 10, y: 10, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -42,7 +43,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3174301466395456292}
-  m_Mesh: {fileID: 5461320835613783329, guid: e358fdec3a9d1bb4698c9123e8b42f09, type: 3}
+  m_Mesh: {fileID: 5461320835613783329, guid: 866c6253661146142afeb30b6b456de0, type: 3}
 --- !u!23 &3174301466395456290
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -63,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 55f70651c88b30c47bb7014e08868d83, type: 2}
+  - {fileID: -2813467912831258332, guid: 866c6253661146142afeb30b6b456de0, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -85,7 +86,23 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &-846898272635508750
+--- !u!54 &-6361769919664281562
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3174301466395456292}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 1
+--- !u!65 &1875729406693336128
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -96,9 +113,9 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.013520585, y: 0.005539272, z: 0.01997465}
-  m_Center: {x: -0.000008977018, y: 0.0000000051222755, z: -0.000008583071}
---- !u!114 &-7551646470904708358
+  m_Size: {x: 0.019997206, y: 0.020000005, z: 0.009098999}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3487625350751977768
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -107,9 +124,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 3174301466395456292}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c06556ce684e14245ba92f6c231b84b0, type: 3}
+  m_Script: {fileID: 11500000, guid: f9e7c094c22c85948bd3f694f5e62875, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  trashPrefabs:
-  - {fileID: 6197407480373216576, guid: dec0313f50f9d4d40b95e5a3e1f5ac2f, type: 3}
-  eatAnimDuration: 0.3
+  cleanAnimDuration: 0.4
+  flyForce: 8
+  horizontalSpread: 2
+  torqueForce: 15
