@@ -11,6 +11,34 @@ public class TrashObject : MonoBehaviour
     [SerializeField] private float torqueForce = 15f; // 回転させる力
 
     private bool isCleaned = false;
+    private bool isRegistered = false;
+
+    private void Start()
+    {
+        // GameManagerへゴミの存在を登録
+        if (IngameGameManager.Instance != null)
+        {
+            IngameGameManager.Instance.RegisterTrash();
+            isRegistered = true;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        Unregister();
+    }
+
+    /// <summary>
+    /// GameManagerからゴミの登録を解除します。
+    /// </summary>
+    private void Unregister()
+    {
+        if (isRegistered && IngameGameManager.Instance != null)
+        {
+            IngameGameManager.Instance.UnregisterTrash();
+            isRegistered = false;
+        }
+    }
 
     /// <summary>
     /// ゴミを掃除（スワイプ）する処理。
@@ -19,6 +47,9 @@ public class TrashObject : MonoBehaviour
     {
         if (isCleaned) return;
         isCleaned = true;
+
+        // 演出に入った時点でゴミのカウントから除外する
+        Unregister();
 
         StartCoroutine(CleanRoutine());
     }

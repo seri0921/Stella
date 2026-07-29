@@ -32,6 +32,10 @@ public class IngameGameManager : MonoBehaviour
     private float timer;
     public float CurrentTimer => timer;
 
+    // シーン内のアクティブなゴミの数
+    private int activeTrashCount = 0;
+    public int ActiveTrashCount => activeTrashCount;
+
     // 進行状況のイベント
     public event Action<GamePhase> OnPhaseChanged;
     public event Action<float> OnTimerUpdated; // 残り時間の通知（UI更新用）
@@ -182,5 +186,35 @@ public class IngameGameManager : MonoBehaviour
         Debug.Log("タイトルシーンへ戻ります。");
         // タイトルシーン名（Start.unityに対応するシーン名）を指定してロード
         SceneManager.LoadScene("Start");
+    }
+
+    /// <summary>
+    /// シーン内にゴミが生成された時に登録します。
+    /// </summary>
+    public void RegisterTrash()
+    {
+        activeTrashCount++;
+        Debug.Log($"【Trash Registered】現在のゴミの数: {activeTrashCount}");
+    }
+
+    /// <summary>
+    /// ゴミが消去された時に登録解除し、全てのゴミが消えたら次の動画フェーズへ遷移します。
+    /// </summary>
+    public void UnregisterTrash()
+    {
+        activeTrashCount--;
+        Debug.Log($"【Trash Unregistered】現在のゴミの数: {activeTrashCount}");
+
+        if (activeTrashCount < 0)
+        {
+            activeTrashCount = 0;
+        }
+
+        // ゴミ掃除フェーズ中にすべてのゴミが消えた場合、即座に次の動画遷移へ
+        if (currentPhase == GamePhase.CleaningTrash && activeTrashCount == 0)
+        {
+            Debug.Log("【Clear】すべてのゴミが掃除されました！動画再生フェーズへ移行します。");
+            ChangePhase(GamePhase.VideoTransition2);
+        }
     }
 }
