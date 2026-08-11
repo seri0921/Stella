@@ -1,73 +1,66 @@
-//using System.Collections;
-//using System.Collections.Generic;
-//using TMPro;
-//using UnityEngine;
+using UnityEngine;
 
-//public class FairyManager : MonoBehaviour
-//{
-//    [Header("UI設定")]
-//    [Tooltip("セリフを表示するテキストコンポーネント")]
-//    [SerializeField] private TextMeshProUGUI dialogueText;
+public class FairyManager : MonoBehaviour
+{
+    [Header("妖精の設定")]
+    [Tooltip("左右に動く速さ")]
+    public float move_speed = 2.5f;
+    [Tooltip("左右に動く距離")]
+    public float move_distance = 5.0f;
+    [Tooltip("下に弧を描く")]
+    public float arc_depth = 1.0f;
 
-//    [TooltipAttribute("セリフを画面に表示しておく時間（秒）")]
-//    [SerializeField] private float
+    private Vector3 startPos; // 始めの位置を記憶
+    private bool FairyMove; 　// 妖精が動いているかどうか
 
-//    // 抽出した妖精のセリフ一覧
-//    private readonly string[] dialogues =
-//    {
-//        "いっぱい食べよう！",
-//        "うさぎを助けるためにごみをきれいにしよう！",
-//        "もう少し！"
-//    };
+    void Start()
+    {
+        // ゲーム開始時の定位置を記憶
+        startPos = transform.position;
 
-//    // セリフの種類を分かりやすく
-//    public enum DialogueType
-//    {
-//        EatLots,    // 誘導シーン：「いっぱい食べよう！」
-//        CleanTrash, // 掃除説明：「うさぎを助けるためにごみをきれいにしよう！」
-//        CheerUp     // 応援演出：「もう少し！」
-//    }
+        // IngameGameManagerのフェーズ変更イベントを連携
+        if (IngameGameManager.Instance != null) {
+            IngameGameManager.Instance.OnPhaseChanged += OnPhaseChanged;
 
-//    private Coroutine hideCoroutine;
+            // ゲーム開始直後のフェーズ状態を取得して初期化
+            OnPhaseChanged(IngameGameManager.Instance.CurrentPhase);
+        }
+    }
 
-//    // Start is called before the first frame update
-//    void Start()
-//    {
-//        // 初期状態ではセリフを非表示
-//        if (dialogueText == null)
-//        {
-//            dialogueText.gameObject.SetActive(false);
-//        }
-//    }
+    void Update()
+    {
+        // 左右に動かす
+        if (FairyMove)
+        {
+            // -1.0～1.0の間の波を作る
+            float wave = Mathf.Sin(Time.time * move_speed);
+            // 波 * 動く距離
+            float xOffset = wave * move_distance;
+            // 波 ** 2 - 1（U字の弧を作る）※wave = -1.0～1.0の時はy = 0、wave = 0の時はy = -arc_depth
+            float yOffset = (wave * wave - 1f) * arc_depth;
 
-//    /// <summary>
-//    /// 指定された場面のセリフを表示します。
-//    /// 他のスクリプト（ゲーム進行管理など）からこのメソッドを呼び出してください。
-//    /// </summary>
-//    /// <param name="type">表示したいセリフの種類</param>
-//    public void ShowDialogue(DialogueType type)
-//    {
-//        if (dialogueText == null) return;
+            transform.position = startPos + new Vector3(xOffset, yOffset, 0);
+        }
+    }
 
-//        // セリフのテキストを更新して表示
-//        dialogueText.text = dialogues[(int)type];
-//        dialogueText.gameObject.SetActive(true);
+    private void Destroy()
+    {
+        if (IngameGameManager.Instance != null) {
+            IngameGameManager.Instance.OnPhaseChanged -= OnPhaseChanged;
+        }
+    }
 
-//        // 既に非表示にするコルーチンが動いていれば停止してリセットする
-//        if (hideCoroutine != null)
-//        {
-//            StopCoroutine(hideCoroutine);
-//        }
-
-//        // 一定時間後に非表示にするコルーチンを開始
-//        hideCoroutine = StartCoroutine(HideDialogueAfterDelay(displayDuration));
-//    }
-
-//    // 一定時間待機してからテキストを非表示にする処理
-//    private IEnumerator HideDialogueAfterDelay(float delay)
-//    {
-//        yield return new WaitForSeconds(delay);
-//        dialogueText.gameObject.SetActive(false);
-//        hideCoroutine = null;
-//    }
-//}
+    private void OnPhaseChanged(IngameGameManager.GamePhase newPhase)
+    {
+        // 食べる・綺麗にするフェーズのとき、妖精が動く
+        if (newPhase == IngameGameManager.GamePhase.EatingSnucks || newPhase == IngameGameManager.GamePhase.CleaningTrash)
+        {
+            FairyMove = true;
+        }
+        else
+        {
+            FairyMove = false;
+            transform.position = startPos;
+        }
+    }
+}
