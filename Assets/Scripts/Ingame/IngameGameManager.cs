@@ -8,12 +8,12 @@ public class IngameGameManager : MonoBehaviour
 
     public enum GamePhase
     {
-        Setup,             // ゲーム準備中
-        EatingSnucks,      // 前半：お菓子を食べる（90秒）
-        VideoTransition1,  // 前半終了後の動画再生
-        CleaningTrash,     // 後半：ゴミ掃除（90秒）
-        VideoTransition2,  // 後半終了後の動画再生
-        GameEnd            // ゲーム終了（タイトルへ遷移）
+        Setup,             // 準備
+        EatingSnucks,      // お菓子を食べる（90秒）
+        VideoTransition1,  // 映像再生
+        CleaningTrash,     // ゴミ掃除（90秒）
+        VideoTransition2,  // 映像再生
+        GameEnd            // 終了
     }
 
     [Header("フェーズ管理")]
@@ -54,7 +54,6 @@ public class IngameGameManager : MonoBehaviour
 
     private void Start()
     {
-        // ゲームが始まったらセットアップを開始
         StartGame();
     }
 
@@ -64,19 +63,18 @@ public class IngameGameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ゲームの開始処理を行います。
+    /// ゲームの開始処理
     /// </summary>
     public void StartGame()
     {
         ChangePhase(GamePhase.Setup);
         
-        // セットアップが完了したら前半（お菓子フェーズ）へ遷移
-        // 実際にはカウントダウン演出などを挟んでも良いですが、まずは直接遷移します
+        // セットアップが完了したら、お菓子フェーズへ遷移
         ChangePhase(GamePhase.EatingSnucks);
     }
 
     /// <summary>
-    /// 各フェーズのタイマー処理を行います。
+    /// 各フェーズのタイマー処理
     /// </summary>
     private void UpdateTimer()
     {
@@ -97,7 +95,7 @@ public class IngameGameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// タイマーが0になった時の処理。
+    /// タイマーが0になった時の処理
     /// </summary>
     private void OnTimeUp()
     {
@@ -116,7 +114,7 @@ public class IngameGameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ゲームフェーズを変更し、各フェーズの初期化処理を行います。
+    /// ゲームフェーズを変更し、各フェーズの初期化処理
     /// </summary>
     public void ChangePhase(GamePhase newPhase)
     {
@@ -127,34 +125,30 @@ public class IngameGameManager : MonoBehaviour
         switch (currentPhase)
         {
             case GamePhase.Setup:
-                // 初期化処理（必要に応じて）
+                // 初期化処理
                 break;
 
             case GamePhase.EatingSnucks:
-                // 前半：お菓子フェーズ開始
+                // お菓子フェーズ開始
                 timer = useShortTimeForTest ? testDuration : eatingDuration;
-                // TODO: お菓子のスポーン処理をここに呼ぶ
                 break;
 
             case GamePhase.VideoTransition1:
-                // 動画遷移1開始（前半から後半への繋ぎ動画）
-                // TODO: VideoTransitionManagerに動画再生を指示
+                // 動画遷移1開始
                 break;
 
             case GamePhase.CleaningTrash:
-                // 後半：ゴミ掃除フェーズ開始
+                // ゴミ掃除フェーズ開始
                 timer = useShortTimeForTest ? testDuration : cleaningDuration;
-                // 前半のゴミが残った状態で掃除開始
                 break;
 
             case GamePhase.VideoTransition2:
-                // 動画遷移2開始（後半からタイトルへの繋ぎ動画）
-                // TODO: VideoTransitionManagerに動画再生を指示
+                // 動画遷移2開始
                 break;
 
             case GamePhase.GameEnd:
                 // タイトルシーンへ戻る
-                ReturnToTitle();
+                Transition_Endgame();
                 break;
         }
 
@@ -168,7 +162,7 @@ public class IngameGameManager : MonoBehaviour
     {
         if (currentPhase == GamePhase.VideoTransition1)
         {
-            // 動画1が終わったら後半（ゴミ掃除）へ
+            // 動画1が終わったら、ゴミ掃除へ
             ChangePhase(GamePhase.CleaningTrash);
         }
         else if (currentPhase == GamePhase.VideoTransition2)
@@ -179,17 +173,15 @@ public class IngameGameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// タイトルシーンへ戻る。
+    /// タイトルシーンへ戻る処理
     /// </summary>
-    private void ReturnToTitle()
+    private void Transition_Endgame()
     {
-        Debug.Log("タイトルシーンへ戻ります。");
-        // タイトルシーン名（Start.unityに対応するシーン名）を指定してロード
-        SceneManager.LoadScene("Start");
+        SceneManager.LoadScene("Endgame");
     }
 
     /// <summary>
-    /// シーン内にゴミが生成された時に登録します。
+    /// シーン内にゴミが生成された時に登録する処理
     /// </summary>
     public void RegisterTrash()
     {
