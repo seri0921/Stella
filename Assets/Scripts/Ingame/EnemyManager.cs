@@ -8,16 +8,25 @@ public class EnemyManager : MonoBehaviour
 {
     [Header("移動範囲の設定")]
     [Tooltip("右端のX座標")]
-    public float leftPos = -5.0f;
+    [SerializeField] float leftPos = -5.0f;
     [Tooltip("左端のX座標")]
-    public float rightPos = 5.0f;
+    [SerializeField] float rightPos = 5.0f;
 
     [Header("動きの設定")]
-    public float move_speed = 1.0f;    // 左右移動する速さ
-    public float jump_speed = 0.1f;    // 跳ねる速さ
-    public float jump_Height = 0.5f; 　// 跳ねる高さ
+    [SerializeField] float move_speed = 1.0f;    // 左右移動する速さ
+    [SerializeField] float jump_speed = 0.1f;    // 跳ねる速さ
+    [SerializeField] float jump_Height = 0.5f; 　// 跳ねる高さ
+
+    [Header("ランダム移動のタイミング設定")]
+    [Tooltip("止まっている時間の最小・最大")]
+    [SerializeField] float wait_timeMIN = 1.0f;
+    [SerializeField] float wait_timeMAX = 3.0f;
+    [Tooltip("動き続ける時間の最小・最大")]
+    [SerializeField] float move_timeMIN = 1.5f;
+    [SerializeField] float move_timeMAX = 4.0f;
 
     private GameObject rabbitNormal; // うさぎ「ノーマル状態」
+    private Coroutine randomCoroutine;
 
     private Vector3 startPos; // うさぎのX・Y・Zの初期位置
 
@@ -25,6 +34,7 @@ public class EnemyManager : MonoBehaviour
     private float currentX; // 現在位置
 
     private bool PlayerEating = false; // お菓子を食べている最中か判定
+    private bool EnemyMove = false;    // 動いているかどうか判定
 
 
     // Start is called before the first frame update
@@ -39,8 +49,10 @@ public class EnemyManager : MonoBehaviour
         // IngameGameManagerのイベント購読
         if (IngameGameManager.Instance != null) {
             IngameGameManager.Instance.OnPhaseChanged += OnPhaseChanged;
+            OnPhaseChanged(IngameGameManager.Instance.CurrentPhase);
         } else {
             PlayerEating = true;
+            Start_Random();
         }
     }
 
@@ -48,7 +60,7 @@ public class EnemyManager : MonoBehaviour
     void Update()
     {
         // プレイヤーが食べている時
-        if (PlayerEating)
+        if (PlayerEating && EnemyMove)
         {
             // 左右に少しずつ跳ねて移動
             currentX += direction * move_speed * Time.deltaTime;
@@ -90,6 +102,8 @@ public class EnemyManager : MonoBehaviour
             // うさぎの現在地を左端に移動させる
             currentX = leftPos;
             if (rabbitNormal != null) rabbitNormal.SetActive(true);
+
+            Start_Random();
         }
         else
         {
@@ -99,6 +113,46 @@ public class EnemyManager : MonoBehaviour
             // 動画再生中やゲーム終了時など、非表示
             if (rabbitNormal != null) rabbitNormal.SetActive(false);
             transform.position = new Vector3(leftPos, startPos.y, startPos.z);
+
+            Stop_Random();
         }
+    }
+
+    private IEnumerator Move_Random()
+    {
+        while (PlayerEating)
+        {
+            // ランダムに停止
+            EnemyMove = false;
+            transform.position = new Vector3(currentX, startPos.y, startPos.z);
+
+            float wait_duration = Random.Range(wait_timeMIN, wait_timeMAX);
+            yield return new WaitForSeconds(wait_duration);
+
+            if (!PlayerEating) break;
+
+
+            // ランダムに移動
+            EnemyMove = true;
+            float move_duration = Random.Range(move_timeMIN, move_timeMAX);
+            yield return new WaitForSeconds(move_duration);
+        }
+        EnemyMove = false;
+    }
+
+    private void Start_Random()
+    {
+        if (randomCoroutine != null) StopCoroutine(randomCoroutine);
+
+        randomCoroutine = StartCoroutine(Move_Random());
+    }
+    private void Stop_Random()
+    {
+        if (randomCoroutine != null)
+        {
+            StopCoroutine(randomCoroutine);
+            randomCoroutine = null;
+        }
+        EnemyMove = false;
     }
 }
