@@ -626,6 +626,7 @@ GameObject:
   - component: {fileID: 994106279}
   - component: {fileID: 994106278}
   - component: {fileID: 994106283}
+  - component: {fileID: 2200000000}
   m_Layer: 0
   m_Name: GameManagers
   m_TagString: Untagged
@@ -2225,3 +2226,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a135c7afef4921341adee9be978e8687, type: 3}
+--- !u!114 &2200000000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 994106277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0aa468a9151b08a4380492989304b5ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eatingBGM: {fileID: 8300000, guid: 078563de87f62a84280d59171d5e4ec5, type: 3}
+  dumpingBGM: {fileID: 8300000, guid: 3bd9eed8f7c90984fa6d7520ef56cd57, type: 3}
+  maxVolume: 1
+  Fade_Duration: 3
+  eatingSE: {fileID: 0}
