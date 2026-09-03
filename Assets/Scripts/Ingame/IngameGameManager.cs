@@ -20,6 +20,9 @@ public class IngameGameManager : MonoBehaviour
     [SerializeField] private GamePhase currentPhase = GamePhase.Setup;
     public GamePhase CurrentPhase => currentPhase;
 
+    [Header("掃除フェーズ連動オブジェクト")]
+    [SerializeField] private GameObject[] cleaningPhaseObjects;
+
     [Header("制限時間設定 (秒)")]
     [SerializeField] private float eatingDuration = 90f;
     [SerializeField] private float cleaningDuration = 90f;
@@ -121,6 +124,8 @@ public class IngameGameManager : MonoBehaviour
         currentPhase = newPhase;
         Debug.Log($"【Phase Changed】現在のフェーズ: {currentPhase}");
 
+        UpdateCleaningPhaseObjects(newPhase);
+
         // 各フェーズの開始処理
         switch (currentPhase)
         {
@@ -153,6 +158,24 @@ public class IngameGameManager : MonoBehaviour
         }
 
         OnPhaseChanged?.Invoke(currentPhase);
+    }
+
+    /// <summary>
+    /// 掃除フェーズ中だけ対象オブジェクトを有効にします。
+    /// </summary>
+    private void UpdateCleaningPhaseObjects(GamePhase phase)
+    {
+        bool shouldBeActive = phase == GamePhase.CleaningTrash;
+
+        if (cleaningPhaseObjects == null) return;
+
+        foreach (GameObject targetObject in cleaningPhaseObjects)
+        {
+            if (targetObject != null)
+            {
+                targetObject.SetActive(shouldBeActive);
+            }
+        }
     }
 
     /// <summary>

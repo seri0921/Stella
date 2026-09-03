@@ -12,6 +12,8 @@ public class TrashObject : MonoBehaviour
 
     private bool isCleaned = false;
     private bool isRegistered = false;
+    private bool isDisposed = false;
+    private Vector3 initialScale;
 
     private void Start()
     {
@@ -48,15 +50,12 @@ public class TrashObject : MonoBehaviour
         if (isCleaned) return;
         isCleaned = true;
 
-        // 演出に入った時点でゴミのカウントから除外する
-        Unregister();
-
         StartCoroutine(CleanRoutine());
     }
 
     private IEnumerator CleanRoutine()
     {
-        Vector3 initialScale = transform.localScale;
+        initialScale = transform.localScale;
         float elapsedTime = 0f;
 
         // 重複判定を防ぐためにコライダーを即座に無効化
@@ -99,6 +98,59 @@ public class TrashObject : MonoBehaviour
             yield return null;
         }
 
+        transform.localScale = Vector3.zero;
+
+        // ワープ管理が設定されている場合は、ゴミ箱の上へ移動させます。
+        // 未設定の場合は従来どおり破棄します。
+        if (TrashWarpManager.Instance != null && TrashWarpManager.Instance.TryWarpTrash(this))
+        {
+            yield break;
+        }
+
+        Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// ワープ後にゴミ箱の上へ配置し、落下できる状態へ戻します。
+    /// </summary>
+    public void WarpToBin(Vector3 position, Quaternion rotation)
+    {
+        if (!isCleaned || isDisposed) return;
+
+        transform.SetPositionAndRotation(position, rotation);
+        transform.localScale = initialScale;
+
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.enabled = true;
+        }
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = false;
+            rb.useGravity = true;
+        }
+    }
+
+    /// <summary>
+    /// ゴミ箱に触れたときにゴミを消去し、GameManagerから登録解除します。
+    /// </summary>
+    public void DisposeInTrashBin()
+    {
+        if (!isCleaned || isDisposed) return;
+        isDisposed = true;
+
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.enabled = false;
+        }
+
+        Unregister();
         Destroy(gameObject);
     }
 
