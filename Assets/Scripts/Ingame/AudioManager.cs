@@ -36,6 +36,13 @@ public class AudioManager : MonoBehaviour
     void Start()
     {
         BGM_Source = GetComponent<AudioSource>();
+        if (BGM_Source == null)
+        {
+            BGM_Source = gameObject.AddComponent<AudioSource>();
+        }
+
+        BGM_Source.playOnAwake = false;
+        BGM_Source.loop = true;
         BGM_Source.volume = maxVolume;
 
         // SE用のAudioSourceを自動で追加して設定
