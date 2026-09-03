@@ -246,7 +246,6 @@ public class KinectInteractionManager : MonoBehaviour
                     if (snuck != null)
                     {
                         snuck.Eat();
-                        if (AudioManager.Instance != null) AudioManager.Instance.PlaySE_eating();
                     }
                 }
             }

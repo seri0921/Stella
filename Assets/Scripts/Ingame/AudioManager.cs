@@ -13,15 +13,22 @@ public class AudioManager : MonoBehaviour
     [SerializeField] AudioClip dumpingBGM;
     [Tooltip("通常の音量")]
     [SerializeField] [Range(0f, 1f)] float maxVolume = 1.0f;
+    [Tooltip("効果音の音量")]
+    [SerializeField] [Range(0f, 1f)] float seVolume = 1.0f;
     [Tooltip("フェーズ終了前に音量小さくする秒間")]
     [SerializeField] float Fade_Duration = 3.0f;
 
     [Header("SEの設定")]
-    [Tooltip("お菓子を食べている時の効果音")]
-    public AudioClip eatingSE;
+    [Tooltip("お菓子を食べた時の効果音（3種類）")]
+    [SerializeField] private AudioClip[] eatingSEs = new AudioClip[3];
+    [Tooltip("うさぎが移動している間に再生するSE")]
+    [SerializeField] private AudioClip rabbitMovementSE;
+    [Tooltip("うさぎ移動SEの再生速度。1.0が標準速度")]
+    [SerializeField] [Range(0.1f, 3.0f)] private float rabbitMovementSESpeed = 1.0f;
 
     private AudioSource BGM_Source;
     private AudioSource SE_Source;
+    private AudioSource RabbitMovementSE_Source;
 
     public static AudioManager Instance { get; private set; }
 
@@ -49,6 +56,16 @@ public class AudioManager : MonoBehaviour
         SE_Source = gameObject.AddComponent<AudioSource>();
         SE_Source.playOnAwake = false;
         SE_Source.loop = false;
+        SE_Source.volume = seVolume;
+
+        // うさぎ移動SE用のAudioSourceを設定
+        RabbitMovementSE_Source = gameObject.AddComponent<AudioSource>();
+        RabbitMovementSE_Source.playOnAwake = false;
+        RabbitMovementSE_Source.loop = true;
+        RabbitMovementSE_Source.volume = seVolume;
+        RabbitMovementSE_Source.spatialBlend = 0.0f;
+        RabbitMovementSE_Source.clip = rabbitMovementSE;
+        RabbitMovementSE_Source.pitch = rabbitMovementSESpeed;
 
         if (IngameGameManager.Instance != null) {
             IngameGameManager.Instance.OnPhaseChanged += OnPhaseChanged;
@@ -87,10 +104,39 @@ public class AudioManager : MonoBehaviour
     // 食べているときの効果音を鳴らす処理
     public void PlaySE_eating()
     {
-        if (eatingSE != null && SE_Source != null)
+        if (eatingSEs == null || eatingSEs.Length == 0 || SE_Source == null)
+        {
+            return;
+        }
+
+        int index = Random.Range(0, eatingSEs.Length);
+        AudioClip selectedSE = eatingSEs[index];
+
+        if (selectedSE != null)
         {
             // PlayOneShot：連続で食べても音が途切れず重なって再生
-            SE_Source.PlayOneShot(eatingSE);
+            SE_Source.PlayOneShot(selectedSE);
+        }
+    }
+
+    // うさぎが移動している間の効果音を再生する処理
+    public void PlaySE_RabbitMovement()
+    {
+        if (rabbitMovementSE == null || RabbitMovementSE_Source == null) return;
+
+        RabbitMovementSE_Source.pitch = rabbitMovementSESpeed;
+        if (!RabbitMovementSE_Source.isPlaying)
+        {
+            RabbitMovementSE_Source.Play();
+        }
+    }
+
+    // うさぎの移動効果音を停止する処理
+    public void StopSE_RabbitMovement()
+    {
+        if (RabbitMovementSE_Source != null && RabbitMovementSE_Source.isPlaying)
+        {
+            RabbitMovementSE_Source.Stop();
         }
     }
 
@@ -110,6 +156,7 @@ public class AudioManager : MonoBehaviour
             // それ以外
             default:
                 StopBGM();
+                StopSE_RabbitMovement();
                 break;
         }
     }

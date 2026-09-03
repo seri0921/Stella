@@ -134,10 +134,15 @@ public class EnemyManager : MonoBehaviour
 
             // ランダムに移動
             EnemyMove = true;
+            Start_MovementSE();
             float move_duration = Random.Range(move_timeMIN, move_timeMAX);
             yield return new WaitForSeconds(move_duration);
+
+            EnemyMove = false;
+            Stop_MovementSE();
         }
         EnemyMove = false;
+        Stop_MovementSE();
     }
 
     private void Start_Random()
@@ -154,5 +159,22 @@ public class EnemyManager : MonoBehaviour
             randomCoroutine = null;
         }
         EnemyMove = false;
+        Stop_MovementSE();
+    }
+
+    private void Start_MovementSE()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySE_RabbitMovement();
+        }
+    }
+
+    private void Stop_MovementSE()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.StopSE_RabbitMovement();
+        }
     }
 }

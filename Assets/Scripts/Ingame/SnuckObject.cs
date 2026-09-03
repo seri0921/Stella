@@ -8,6 +8,10 @@ public class SnuckObject : MonoBehaviour
     [SerializeField] private GameObject[] trashPrefabs; // 生成されるゴミプレハブ（複数からランダム）
     [SerializeField] private float eatAnimDuration = 0.3f; // 食べられた時の縮小アニメーション時間
 
+    [Header("食べた時のエフェクト設定")]
+    [Tooltip("お菓子を食べた場所に表示するエフェクトPrefab")]
+    [SerializeField] private GameObject[] eatEffectPrefabs;
+
     private bool isEaten = false;
 
     /// <summary>
@@ -18,7 +22,27 @@ public class SnuckObject : MonoBehaviour
         if (isEaten) return;
         isEaten = true;
 
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySE_eating();
+        }
+
+        SpawnEatEffect();
+
         StartCoroutine(EatRoutine());
+    }
+
+    private void SpawnEatEffect()
+    {
+        if (eatEffectPrefabs == null || eatEffectPrefabs.Length == 0) return;
+
+        int index = Random.Range(0, eatEffectPrefabs.Length);
+        GameObject selectedEffect = eatEffectPrefabs[index];
+
+        if (selectedEffect != null)
+        {
+            Instantiate(selectedEffect, transform.position, Quaternion.identity);
+        }
     }
 
     private IEnumerator EatRoutine()
