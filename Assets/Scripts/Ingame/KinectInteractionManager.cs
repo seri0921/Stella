@@ -246,7 +246,7 @@ public class KinectInteractionManager : MonoBehaviour
                     if (snuck != null)
                     {
                         snuck.Eat();
-                        Debug.Log("Mouse Tap: お菓子を食べました。");
+                        if (AudioManager.Instance != null) AudioManager.Instance.PlaySE_eating();
                     }
                 }
             }
