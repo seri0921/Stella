@@ -65,7 +65,7 @@ public class IngameUIManager : MonoBehaviour
                 break;
 
             case IngameGameManager.GamePhase.EatingSnucks:
-                phaseText.text = "お菓子をたくさんたべよう！";
+                phaseText.text = "おかしをたくさんたべよう！";
                 SetGameplayUIVisibility(true);
                 break;
 
