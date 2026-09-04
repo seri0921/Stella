@@ -6,18 +6,24 @@ using UnityEngine.Video;
 
 public class EnemyManager : MonoBehaviour
 {
-    [Header("移動範囲の設定")]
+    [Header("キャラクターの設定")]
+    [Tooltip("うさぎ「ノーマル状態」")]
+    [SerializeField] private GameObject rabbitNormal;
+    [Tooltip("うさぎ「ゴミモンスター化」")]
+    [SerializeField] private GameObject trashMonster;
+
+    [Header("うさぎの移動範囲")]
     [Tooltip("右端のX座標")]
     [SerializeField] float leftPos = -5.0f;
     [Tooltip("左端のX座標")]
     [SerializeField] float rightPos = 5.0f;
 
-    [Header("動きの設定")]
+    [Header("うさぎの動き")]
     [SerializeField] float move_speed = 1.0f;    // 左右移動する速さ
     [SerializeField] float jump_speed = 0.1f;    // 跳ねる速さ
     [SerializeField] float jump_Height = 0.5f; 　// 跳ねる高さ
 
-    [Header("ランダム移動のタイミング設定")]
+    [Header("うさぎのランダム移動のタイミング")]
     [Tooltip("止まっている時間の最小・最大")]
     [SerializeField] float wait_timeMIN = 1.0f;
     [SerializeField] float wait_timeMAX = 3.0f;
@@ -25,7 +31,6 @@ public class EnemyManager : MonoBehaviour
     [SerializeField] float move_timeMIN = 1.5f;
     [SerializeField] float move_timeMAX = 4.0f;
 
-    private GameObject rabbitNormal; // うさぎ「ノーマル状態」
     private Coroutine randomCoroutine;
 
     private Vector3 startPos; // うさぎのX・Y・Zの初期位置
@@ -33,9 +38,8 @@ public class EnemyManager : MonoBehaviour
     private int direction;  // 移動方向
     private float currentX; // 現在位置
 
-    private bool PlayerEating = false; // お菓子を食べている最中か判定
+    private bool ActivePhase = false;  // アクティブ状態（お菓子を食べているか、ゴミを捨てているか）
     private bool EnemyMove = false;    // 動いているかどうか判定
-
 
     // Start is called before the first frame update
     void Start()
@@ -51,7 +55,7 @@ public class EnemyManager : MonoBehaviour
             IngameGameManager.Instance.OnPhaseChanged += OnPhaseChanged;
             OnPhaseChanged(IngameGameManager.Instance.CurrentPhase);
         } else {
-            PlayerEating = true;
+            ActivePhase = true;
             Start_Random();
         }
     }
@@ -60,7 +64,7 @@ public class EnemyManager : MonoBehaviour
     void Update()
     {
         // プレイヤーが食べている時
-        if (PlayerEating && EnemyMove)
+        if (ActivePhase && EnemyMove)
         {
             // 左右に少しずつ跳ねて移動
             currentX += direction * move_speed * Time.deltaTime;
@@ -94,33 +98,49 @@ public class EnemyManager : MonoBehaviour
     // フェーズが変わったときの処理
     private void OnPhaseChanged(IngameGameManager.GamePhase newPhase)
     {
+        // うさぎが動く
         if (newPhase == IngameGameManager.GamePhase.EatingSnucks)
         {
             // プレイヤーが食べる
-            PlayerEating = true;
-
+            ActivePhase = true;
             // うさぎの現在地を左端に移動させる
             currentX = leftPos;
-            if (rabbitNormal != null) rabbitNormal.SetActive(true);
 
+            if (rabbitNormal != null) rabbitNormal.SetActive(true);
+            if (trashMonster != null) trashMonster.SetActive(false);
+
+            currentX = leftPos;
+            direction = 1;
+            transform.rotation = Quaternion.Euler(-90, 90, 0);
             Start_Random();
+        }
+        // うさぎ（ゴミモンスター）は動かない
+        else if(newPhase == IngameGameManager.GamePhase.CleaningTrash)
+        {
+            ActivePhase = false;
+            Stop_Random();
+
+            if (rabbitNormal != null) rabbitNormal.SetActive(false);
+            if (trashMonster != null) trashMonster.SetActive(true);
+
+            transform.position = new Vector3(0f, startPos.y, startPos.z);
+            transform.rotation = Quaternion.Euler(-90, 90, 0);
         }
         else
         {
-            // プレイヤーが食べない
-            PlayerEating = false;
-
-            // 動画再生中やゲーム終了時など、非表示
-            if (rabbitNormal != null) rabbitNormal.SetActive(false);
-            transform.position = new Vector3(leftPos, startPos.y, startPos.z);
-
+            ActivePhase = false;
             Stop_Random();
+
+            if (rabbitNormal != null) rabbitNormal.SetActive(false);
+            if (trashMonster != null) trashMonster.SetActive(true);
+
+            transform.position = new Vector3(leftPos, startPos.y, startPos.z);
         }
     }
 
     private IEnumerator Move_Random()
     {
-        while (PlayerEating)
+        while (ActivePhase)
         {
             // ランダムに停止
             EnemyMove = false;
@@ -129,7 +149,7 @@ public class EnemyManager : MonoBehaviour
             float wait_duration = Random.Range(wait_timeMIN, wait_timeMAX);
             yield return new WaitForSeconds(wait_duration);
 
-            if (!PlayerEating) break;
+            if (!ActivePhase) break;
 
 
             // ランダムに移動
