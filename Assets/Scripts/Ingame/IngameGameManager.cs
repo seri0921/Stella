@@ -9,6 +9,7 @@ public class IngameGameManager : MonoBehaviour
     public enum GamePhase
     {
         Setup,             // 準備
+        Navigation,        // 案内
         EatingSnucks,      // お菓子を食べる（90秒）
         VideoTransition1,  // 映像再生
         CleaningTrash,     // ゴミ掃除（90秒）
@@ -24,12 +25,13 @@ public class IngameGameManager : MonoBehaviour
     [SerializeField] private GameObject[] cleaningPhaseObjects;
 
     [Header("制限時間設定 (秒)")]
-    [SerializeField] private float eatingDuration = 90f;
-    [SerializeField] private float cleaningDuration = 90f;
+    [SerializeField] private float NaviDuration = 5f;
+    [SerializeField] private float EatDuration = 90f;
+    [SerializeField] private float CleanDuration = 90f;
 
     [Header("デバッグ機能")]
     [SerializeField] private bool useShortTimeForTest = false;
-    [SerializeField] private float testDuration = 5f; // テスト時の時間
+    [SerializeField] private float testDuration = 5f;
 
     // タイマー変数
     private float timer;
@@ -65,23 +67,19 @@ public class IngameGameManager : MonoBehaviour
         UpdateTimer();
     }
 
-    /// <summary>
-    /// ゲームの開始処理
-    /// </summary>
+    // ゲームの開始処理
     public void StartGame()
     {
         ChangePhase(GamePhase.Setup);
-        
-        // セットアップが完了したら、お菓子フェーズへ遷移
-        ChangePhase(GamePhase.EatingSnucks);
+        ChangePhase(GamePhase.Navigation);
     }
 
-    /// <summary>
-    /// 各フェーズのタイマー処理
-    /// </summary>
+    // 各フェーズのタイマー処理
     private void UpdateTimer()
     {
-        if (currentPhase == GamePhase.EatingSnucks || currentPhase == GamePhase.CleaningTrash)
+        if (currentPhase == GamePhase.Navigation ||
+            currentPhase == GamePhase.EatingSnucks ||
+            currentPhase == GamePhase.CleaningTrash)
         {
             timer -= Time.deltaTime;
             if (timer <= 0f)
@@ -97,14 +95,16 @@ public class IngameGameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// タイマーが0になった時の処理
-    /// </summary>
+    // タイマーが0になった時の処理
     private void OnTimeUp()
     {
         Debug.Log($"【TimeUp】フェーズ {currentPhase} が終了しました。");
 
-        if (currentPhase == GamePhase.EatingSnucks)
+        if (currentPhase == GamePhase.Navigation)
+        {
+            ChangePhase(GamePhase.EatingSnucks);
+        }
+        else if (currentPhase == GamePhase.EatingSnucks)
         {
             // 前半終了 ➔ 動画遷移1へ
             ChangePhase(GamePhase.VideoTransition1);
@@ -116,9 +116,7 @@ public class IngameGameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// ゲームフェーズを変更し、各フェーズの初期化処理
-    /// </summary>
+    // ゲームフェーズを変更し、各フェーズの初期化処理
     public void ChangePhase(GamePhase newPhase)
     {
         currentPhase = newPhase;
@@ -133,9 +131,13 @@ public class IngameGameManager : MonoBehaviour
                 // 初期化処理
                 break;
 
+            case GamePhase.Navigation:
+                timer = useShortTimeForTest ? testDuration : NaviDuration;
+                break;
+
             case GamePhase.EatingSnucks:
                 // お菓子フェーズ開始
-                timer = useShortTimeForTest ? testDuration : eatingDuration;
+                timer = useShortTimeForTest ? testDuration : EatDuration;
                 break;
 
             case GamePhase.VideoTransition1:
@@ -144,7 +146,7 @@ public class IngameGameManager : MonoBehaviour
 
             case GamePhase.CleaningTrash:
                 // ゴミ掃除フェーズ開始
-                timer = useShortTimeForTest ? testDuration : cleaningDuration;
+                timer = useShortTimeForTest ? testDuration : CleanDuration;
                 break;
 
             case GamePhase.VideoTransition2:

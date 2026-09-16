@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class IngameUIManager : MonoBehaviour
@@ -8,6 +9,10 @@ public class IngameUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private TextMeshProUGUI phaseText;
     [SerializeField] private CanvasGroup gamePlayCanvasGroup; // ゲームプレイUI（タイマーなど）をまとめて非表示にする用
+
+    [Header("妖精のUI")]
+    [Tooltip("オブジェクト・セリフをまとめたパネル")]
+    [SerializeField] private GameObject NaviUI;
 
     private void Start()
     {
@@ -36,9 +41,7 @@ public class IngameUIManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 残り時間タイマーのUIを更新します。
-    /// </summary>
+    // 残り時間タイマーのUIを更新します。
     /// <param name="remainingTime">残り時間（秒）</param>
     private void UpdateTimerUI(float remainingTime)
     {
@@ -50,12 +53,15 @@ public class IngameUIManager : MonoBehaviour
         timerText.text = string.Format("{0:0}:{1:00}", minutes, seconds);
     }
 
-    /// <summary>
-    /// フェーズが変更された際のUI表示制御。
-    /// </summary>
+    // フェーズが変更された際のUI表示制御。
     private void OnPhaseChanged(IngameGameManager.GamePhase newPhase)
     {
         if (phaseText == null) return;
+
+        if (NaviUI != null)
+        {
+            NaviUI.SetActive(newPhase == IngameGameManager.GamePhase.Navigation);
+        }
 
         switch (newPhase)
         {
@@ -65,7 +71,7 @@ public class IngameUIManager : MonoBehaviour
                 break;
 
             case IngameGameManager.GamePhase.EatingSnucks:
-                phaseText.text = "おかしをたくさんたべよう！";
+                phaseText.text = "お菓子をたくさん食べよう！";
                 SetGameplayUIVisibility(true);
                 break;
 
@@ -91,9 +97,7 @@ public class IngameUIManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// ゲームプレイ用UIの表示・非表示を切り替えます。
-    /// </summary>
+    // ゲームプレイ用UIの表示・非表示を切り替えます。
     private void SetGameplayUIVisibility(bool visible)
     {
         if (gamePlayCanvasGroup != null)

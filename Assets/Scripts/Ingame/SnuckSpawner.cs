@@ -125,9 +125,13 @@ public class SnuckSpawner : MonoBehaviour
 
         if (prefab != null)
         {
-            // ランダムな回転を少し加える
-            Quaternion randomRot = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-            GameObject snuck = Instantiate(prefab, randomPos, randomRot, transform);
+            // お菓子の向きが正面を向いて、出現
+            Quaternion Rot = prefab.transform.rotation;
+            GameObject snuck = Instantiate(prefab, randomPos, Rot, transform);
+
+            // 生成されたお菓子のサイズを固定
+            snuck.transform.localScale = new Vector3(10f, 10f, 10f);
+            
             spawnedSnucks.Add(snuck);
         }
     }
