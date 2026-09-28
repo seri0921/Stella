@@ -202,7 +202,7 @@ public class IngameGameManager : MonoBehaviour
     /// </summary>
     private void Transition_Endgame()
     {
-        SceneManager.LoadScene("Endgame");
+        SceneManager.LoadSceneAsync("Endgame");
     }
 
     /// <summary>
