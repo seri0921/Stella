@@ -50,6 +50,9 @@ public class EnemyManager : MonoBehaviour
         // 現在のX位置のみ記録
         currentX = startPos.x;
 
+        if (rabbitNormal != null) rabbitNormal.SetActive(false);
+        if (trashMonster != null) trashMonster.SetActive(false);
+
         // IngameGameManagerのイベント購読
         if (IngameGameManager.Instance != null) {
             IngameGameManager.Instance.OnPhaseChanged += OnPhaseChanged;
@@ -98,43 +101,43 @@ public class EnemyManager : MonoBehaviour
     // フェーズが変わったときの処理
     private void OnPhaseChanged(IngameGameManager.GamePhase newPhase)
     {
-        // うさぎが動く
-        if (newPhase == IngameGameManager.GamePhase.EatingSnucks)
+        switch(newPhase)
         {
-            // プレイヤーが食べる
-            ActivePhase = true;
-            // うさぎの現在地を左端に移動させる
-            currentX = leftPos;
+            case IngameGameManager.GamePhase.EatingSnucks:
+                // うさぎが動く
+                ActivePhase = true;
 
-            if (rabbitNormal != null) rabbitNormal.SetActive(true);
-            if (trashMonster != null) trashMonster.SetActive(false);
+                if (rabbitNormal != null) rabbitNormal.SetActive(true);
+                if (trashMonster != null) trashMonster.SetActive(false);
 
-            currentX = leftPos;
-            direction = 1;
-            transform.rotation = Quaternion.Euler(-90, 90, 0);
-            Start_Random();
-        }
-        // うさぎ（ゴミモンスター）は動かない
-        else if(newPhase == IngameGameManager.GamePhase.CleaningTrash)
-        {
-            ActivePhase = false;
-            Stop_Random();
+                // うさぎの現在地を左端に移動させる
+                currentX = leftPos;
+                direction = 1;
+                transform.rotation = Quaternion.Euler(-90, 90, 0);
+                Start_Random();
+                break;
 
-            if (rabbitNormal != null) rabbitNormal.SetActive(false);
-            if (trashMonster != null) trashMonster.SetActive(true);
+            case IngameGameManager.GamePhase.CleaningTrash:
+                // うさぎが動かない
+                ActivePhase = false;
+                Stop_Random();
 
-            transform.position = new Vector3(0f, startPos.y, startPos.z);
-            transform.rotation = Quaternion.Euler(-90, 90, 0);
-        }
-        else
-        {
-            ActivePhase = false;
-            Stop_Random();
+                if (rabbitNormal != null) rabbitNormal.SetActive(false);
+                if (trashMonster != null) trashMonster.SetActive(true);
 
-            if (rabbitNormal != null) rabbitNormal.SetActive(false);
-            if (trashMonster != null) trashMonster.SetActive(true);
+                transform.position = new Vector3(0f, startPos.y, startPos.z);
+                transform.rotation = Quaternion.Euler(-90, 90, 0);
+                break;
 
-            transform.position = new Vector3(leftPos, startPos.y, startPos.z);
+            default:
+                ActivePhase = false;
+                Stop_Random();
+
+                if (rabbitNormal != null) rabbitNormal.SetActive(false);
+                if (trashMonster != null) trashMonster.SetActive(false);
+
+                transform.position = new Vector3(leftPos, startPos.y, startPos.z);
+                break;
         }
     }
 

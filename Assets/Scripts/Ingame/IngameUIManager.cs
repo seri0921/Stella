@@ -6,13 +6,30 @@ using UnityEngine;
 public class IngameUIManager : MonoBehaviour
 {
     [Header("UI要素の参照")]
-    [SerializeField] private TextMeshProUGUI timerText;
-    [SerializeField] private TextMeshProUGUI phaseText;
-    [SerializeField] private CanvasGroup gamePlayCanvasGroup; // ゲームプレイUI（タイマーなど）をまとめて非表示にする用
+    [SerializeField] TextMeshProUGUI timerText;
+    [SerializeField] TextMeshProUGUI phaseText;
+    [SerializeField] CanvasGroup gamePlayCanvasGroup; // ゲームプレイUI（タイマーなど）をまとめて非表示にする用
 
-    [Header("妖精のUI")]
+    [Header("セリフのUI")]
     [Tooltip("オブジェクト・セリフをまとめたパネル")]
-    [SerializeField] private GameObject NaviUI;
+    [SerializeField] GameObject NaviUI;
+    [Tooltip("セリフの位置")]
+    [SerializeField] Vector3 NaviUIPosition = new Vector3(5f, 2f, -7);
+
+    [Header("妖精のオブジェクト")]
+    [SerializeField] Transform NaviTransform;
+
+    [Header("NavigationPhase")]
+    [Tooltip("妖精のTransform")]
+    [SerializeField] Vector3 NaviPosition = new Vector3(0f, 4f, -7f);
+    [SerializeField] Vector3 NaviRotation = new Vector3(-90f, 0f, 0f);
+    [SerializeField] Vector3 NaviScale = new Vector3(200f, 200f, 200f);
+
+    [Header("NavigationPhase")]
+    [Tooltip("妖精のTransform")]
+    [SerializeField] Vector3 NaviPosition_Ingame = new Vector3(0f, 4f, -7f);
+    [SerializeField] Vector3 NaviRotation_Ingame = new Vector3(-90f, 0f, 0f);
+    [SerializeField] Vector3 NaviScale_Ingame = new Vector3(200f, 200f, 200f);
 
     private void Start()
     {
@@ -58,9 +75,40 @@ public class IngameUIManager : MonoBehaviour
     {
         if (phaseText == null) return;
 
+        bool isNavigation = (newPhase == IngameGameManager.GamePhase.Navigation);
+
         if (NaviUI != null)
         {
-            NaviUI.SetActive(newPhase == IngameGameManager.GamePhase.Navigation);
+            NaviUI.SetActive(isNavigation);
+
+            if (isNavigation) NaviUI.transform.localPosition = NaviUIPosition;
+        }
+
+        if (NaviTransform != null)
+        {
+            // 表示させるフェーズ
+            bool Navi_visible = (newPhase == IngameGameManager.GamePhase.Navigation ||
+                                   newPhase == IngameGameManager.GamePhase.EatingSnucks ||
+                                   newPhase == IngameGameManager.GamePhase.CleaningTrash);
+
+            NaviTransform.gameObject.SetActive(Navi_visible);
+
+            // フェーズによって位置・大きさ・角度を切り替える
+            if (newPhase == IngameGameManager.GamePhase.Navigation)
+            {
+                // セリフフェーズ中の設定
+                NaviTransform.localPosition = NaviPosition;
+                NaviTransform.localScale = NaviScale;
+                NaviTransform.localRotation = Quaternion.Euler(NaviRotation);
+            }
+            else if (newPhase == IngameGameManager.GamePhase.EatingSnucks ||
+                     newPhase == IngameGameManager.GamePhase.CleaningTrash)
+            {
+                // ゲームプレイ中の設定
+                NaviTransform.localPosition = NaviPosition_Ingame;
+                NaviTransform.localScale = NaviScale_Ingame;
+                NaviTransform.localRotation = Quaternion.Euler(NaviRotation_Ingame);
+            }
         }
 
         switch (newPhase)
@@ -81,7 +129,7 @@ public class IngameUIManager : MonoBehaviour
                 break;
 
             case IngameGameManager.GamePhase.CleaningTrash:
-                phaseText.text = "ゴミをきれいにそうじしよう！";
+                phaseText.text = "ゴミを綺麗に掃除しよう！";
                 SetGameplayUIVisibility(true);
                 break;
 
