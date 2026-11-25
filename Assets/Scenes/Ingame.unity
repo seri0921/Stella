@@ -1092,14 +1092,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20ae3fbf8581d634ebc488391efc22cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentPhase: 0
+  currentPhase: 2
   cleaningPhaseObjects:
   - {fileID: 1140931640}
   - {fileID: 1998265961}
   NaviDuration: 5
   EatDuration: 90
   CleanDuration: 90
-  useShortTimeForTest: 1
+  useShortTimeForTest: 0
   testDuration: 30
 --- !u!4 &994106282
 Transform:

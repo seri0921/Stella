@@ -1,4 +1,5 @@
 using System.Collections;
+using Effekseer;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
@@ -9,6 +10,7 @@ public class SnuckObject : MonoBehaviour
     [SerializeField] private float eatAnimDuration = 0.3f; // 食べられた時の縮小アニメーション時間
 
     [Header("食べた時のエフェクト設定")]
+    [SerializeField] private EffekseerEffectAsset eatEffect;
     [Tooltip("お菓子を食べた場所に表示するエフェクトPrefab")]
     [SerializeField] private GameObject[] eatEffectPrefabs;
 
@@ -34,6 +36,12 @@ public class SnuckObject : MonoBehaviour
 
     private void SpawnEatEffect()
     {
+        if (eatEffect != null)
+        {
+            EffekseerSystem.PlayEffect(eatEffect, transform.position);
+            return;
+        }
+
         if (eatEffectPrefabs == null || eatEffectPrefabs.Length == 0) return;
 
         int index = Random.Range(0, eatEffectPrefabs.Length);
