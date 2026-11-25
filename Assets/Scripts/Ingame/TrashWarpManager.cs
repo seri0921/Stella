@@ -1,19 +1,21 @@
 using System.Collections;
+using Effekseer;
 using UnityEngine;
 
 /// <summary>
-/// 掃除されたゴミをワープゲート経由でゴミ箱の上へ移動させます。
+/// 掃除されたゴミをゴミ箱の上へ転送します。
 /// </summary>
 public class TrashWarpManager : MonoBehaviour
 {
     public static TrashWarpManager Instance { get; private set; }
 
-    [Header("ワープゲート設定")]
-    [SerializeField] private GameObject warpGatePrefab;
-    [SerializeField] private Transform warpGateOrientation;
-    [SerializeField] private float warpGateAppearDuration = 0.25f;
-    [SerializeField] private float warpDelay = 0.4f;
-    [SerializeField] private float warpGateVisibleDuration = 1f;
+    [Header("ワープエフェクト設定")]
+    [SerializeField] private float warpEffectStartDelay = 0.65f;
+    [SerializeField] private EffekseerEffectAsset departureEffect;
+    [SerializeField, Min(0f)] private float departureEffectScale = 0.25f;
+    [SerializeField, Min(0f)] private float departureEffectDuration = 0.25f;
+    [SerializeField] private EffekseerEffectAsset arrivalEffect;
+    [SerializeField, Min(0f)] private float arrivalEffectScale = 0.25f;
 
     [Header("ワープ先設定")]
     [SerializeField] private Transform[] warpDestinationPoints = new Transform[2];
@@ -33,7 +35,7 @@ public class TrashWarpManager : MonoBehaviour
     /// <summary>
     /// ゴミのワープ処理を開始します。
     /// </summary>
-    public bool TryWarpTrash(TrashObject trash)
+    public bool TryWarpTrash(TrashObject trash, float cleanStartedAt)
     {
         if (warpDestinationPoints == null || warpDestinationPoints.Length != 2 ||
             warpDestinationPoints[0] == null || warpDestinationPoints[1] == null)
@@ -42,14 +44,8 @@ public class TrashWarpManager : MonoBehaviour
             return false;
         }
 
-        if (warpGatePrefab == null)
-        {
-            Debug.LogError("ワープゲートPrefabが設定されていません。TrashWarpManagerを確認してください。");
-            return false;
-        }
-
         Transform nearestDestination = GetNearestDestinationPoint(trash.transform.position);
-        StartCoroutine(WarpTrashRoutine(trash, nearestDestination));
+        StartCoroutine(WarpTrashRoutine(trash, nearestDestination, cleanStartedAt));
         return true;
     }
 
@@ -71,53 +67,53 @@ public class TrashWarpManager : MonoBehaviour
         return nearestDestination;
     }
 
-    private IEnumerator WarpTrashRoutine(TrashObject trash, Transform destination)
+    private IEnumerator WarpTrashRoutine(TrashObject trash, Transform destination, float cleanStartedAt)
     {
-        Quaternion gateRotation = warpGateOrientation != null
-            ? warpGateOrientation.rotation
-            : Quaternion.identity;
-
-        GameObject gate = Instantiate(
-            warpGatePrefab,
-            trash.transform.position,
-            gateRotation
-        );
-
-        Vector3 targetScale = gate.transform.localScale;
-        gate.transform.localScale = Vector3.zero;
-        Destroy(gate, Mathf.Max(0f, warpGateVisibleDuration));
-
-        float elapsedTime = 0f;
-        while (elapsedTime < warpGateAppearDuration)
+        float remainingDelay = cleanStartedAt + warpEffectStartDelay - Time.time;
+        if (remainingDelay > 0f)
         {
-            elapsedTime += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsedTime / warpGateAppearDuration);
-            float easedT = Mathf.SmoothStep(0f, 1f, t);
+            yield return new WaitForSeconds(remainingDelay);
+        }
 
-            if (gate != null)
+        if (trash == null || destination == null) yield break;
+
+        Vector3 departurePosition = trash.transform.position;
+        EffekseerHandle? departure = departureEffect != null
+            ? PlayWarpEffect(departureEffect, departurePosition, departureEffectScale)
+            : (EffekseerHandle?)null;
+
+        try
+        {
+            if (departureEffectDuration > 0f)
             {
-                gate.transform.localScale = Vector3.Lerp(Vector3.zero, targetScale, easedT);
+                yield return new WaitForSeconds(departureEffectDuration);
             }
-
-            yield return null;
         }
-
-        if (gate != null)
+        finally
         {
-            gate.transform.localScale = targetScale;
+            departure?.Stop();
         }
 
-        if (warpDelay > 0f)
+        if (trash == null || destination == null) yield break;
+
+        Vector3 arrivalPosition = destination.position;
+        trash.transform.SetPositionAndRotation(arrivalPosition, destination.rotation);
+        if (arrivalEffect != null)
         {
-            yield return new WaitForSeconds(warpDelay);
+            PlayWarpEffect(arrivalEffect, arrivalPosition, arrivalEffectScale);
         }
 
-        if (trash != null)
+        trash.BeginBinDrop();
+    }
+
+    private static EffekseerHandle PlayWarpEffect(EffekseerEffectAsset effect, Vector3 position, float scale)
+    {
+        EffekseerHandle handle = EffekseerSystem.PlayEffect(effect, position);
+        if (handle.exists)
         {
-            trash.WarpToBin(
-                destination.position,
-                destination.rotation
-            );
+            handle.SetScale(Vector3.one * scale);
         }
+
+        return handle;
     }
 }

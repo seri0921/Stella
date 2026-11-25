@@ -1,0 +1,106 @@
+A-07 ポータル 使い方メモ
+対象：Unity 2021.3.45f2 / Built-in（Forward Rendering）
+
+■ このフォルダの中身
+- A07_Warp.efkefc    … つかんでいる間（ポンッと開いて、回り続ける）
+- A07_Warp_In.efkefc … 入ったとき（シュポンと縮んで消える。約1秒）
+- png 6枚            … ポータルの画像
+
+フォルダの中身は、バラさずにフォルダごと使ってください。
+エフェクトは「同じフォルダにある画像」を使うようにできています。
+
+
+■ 手順1：フォルダを Unity に入れる
+1. Effekseer のプラグインがまだの場合は、先に Effekseer.unitypackage を取り込む
+   （A-01 のときに取り込んでいれば不要）
+2. A07_Warp フォルダを、フォルダごと Project ウィンドウへドラッグ＆ドロップ
+   （例：Assets/Effects の中）
+3. 青い丸のアイコンの「A07_Warp」と「A07_Warp_In」が増えたら OK
+
+
+■ 手順2：スクリプトを付ける
+1. 下の内容で WarpPortal.cs を作る
+2. GameObject に付ける
+3. Inspector の warp に青い丸の A07_Warp、warpIn に青い丸の A07_Warp_In を入れる
+
+using UnityEngine;
+using Effekseer;
+
+public class WarpPortal : MonoBehaviour
+{
+    public EffekseerEffectAsset warp;    // A07_Warp
+    public EffekseerEffectAsset warpIn;  // A07_Warp_In
+    public float scale = 0.25f;          // A-01 と同じ数字
+
+    EffekseerHandle handle;
+    bool playing;
+    Vector3 portalPosition;
+
+    // ゴミをつかんだとき（触った場所を渡す）
+    public void OnGrab(Vector3 worldPosition)
+    {
+        Close();
+        portalPosition = worldPosition;
+        handle = EffekseerSystem.PlayEffect(warp, worldPosition);
+        handle.SetScale(Vector3.one * scale);
+        playing = true;
+    }
+
+    // 入れずにゴミを離したとき
+    public void OnRelease()
+    {
+        Close();
+    }
+
+    // ゴミが入ったとき
+    public void OnEnter()
+    {
+        if (!playing) return;
+        Close();
+        EffekseerHandle h = EffekseerSystem.PlayEffect(warpIn, portalPosition);
+        h.SetScale(Vector3.one * scale);
+    }
+
+    void Close()
+    {
+        if (playing) handle.Stop();
+        playing = false;
+    }
+
+    void OnDisable()
+    {
+        Close();
+    }
+}
+
+
+■ 手順3：ゲームから呼ぶ（portal は手順2で付けた WarpPortal）
+- ゴミをつかんだとき       → portal.OnGrab(触った場所);
+- 入れずにゴミを離したとき → portal.OnRelease();
+- ゴミが入ったとき         → portal.OnEnter();
+
+※ ポータルは、触った場所に出してください。
+※ 触ったときだけ出ます（OnGrab を呼ばない限り、勝手には出ません）。
+
+触った画面の位置から呼ぶ例（z はカメラからゴミまでの距離）：
+    Vector3 screen = Input.mousePosition;   // タッチなら Input.GetTouch(i).position
+    screen.z = 10f;
+    portal.OnGrab(Camera.main.ScreenToWorldPoint(screen));
+
+※ A07_Warp は自分では消えません。離したとき・入ったときに必ず OnRelease か OnEnter を呼ぶ。
+※ ポータルが同時に何個も出る場合は、ポータルごとに WarpPortal を1つずつ付ける。
+
+
+■ うまくいかないとき
+- Console に赤いエラーが出る
+    → エラーの文をそのままコピーして、エフェクト担当に送る
+- 青い丸のアイコンにならない（白い紙のまま）
+    → 赤いエラーが 0 個になってから、右クリック → Reimport
+- ピンクや白の四角になる
+    → このフォルダの中に png が 6枚あるか確認して Reimport
+- 何も見えない
+    → カメラの正面・背景より手前で再生しているか確認
+- 大きすぎる / 小さすぎる
+    → WarpPortal の scale を変える（最初は 0.25）
+- ポータルがずっと残る
+    → OnRelease か OnEnter が呼ばれているか確認
