@@ -1097,7 +1097,7 @@ MonoBehaviour:
   - {fileID: 1140931640}
   - {fileID: 1998265961}
   NaviDuration: 5
-  EatDuration: 90
+  EatDuration: 10
   CleanDuration: 90
   useShortTimeForTest: 0
   testDuration: 30
@@ -2658,12 +2658,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a3b4d2e8c0f4b3f9b6c2d1e7f5a8c01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  warpGatePrefab: {fileID: 6740579870229725448, guid: 3f4c5b8737b9e9f4cb219dc7a6c1382c,
-    type: 3}
-  warpGateOrientation: {fileID: 0}
-  warpGateAppearDuration: 0.25
-  warpDelay: 0.0001
-  warpGateVisibleDuration: 1
+  warpEffectStartDelay: 0.65
+  departureEffect: {fileID: 11400000, guid: bd7f6f9a15cf3044ca9a0bd117e21743, type: 2}
+  departureEffectScale: 0.1
+  departureEffectDuration: 0.25
+  arrivalEffect: {fileID: 11400000, guid: 136504545547387449cb363f604edcdf, type: 2}
+  arrivalEffectScale: 0.1
   warpDestinationPoints:
   - {fileID: 980651898}
   - {fileID: 1594314621}

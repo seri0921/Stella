@@ -55,6 +55,7 @@ public class TrashObject : MonoBehaviour
 
     private IEnumerator CleanRoutine()
     {
+        float cleanStartedAt = Time.time;
         initialScale = transform.localScale;
         float elapsedTime = 0f;
 
@@ -99,10 +100,14 @@ public class TrashObject : MonoBehaviour
         }
 
         transform.localScale = Vector3.zero;
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+        }
 
         // ワープ管理が設定されている場合は、ゴミ箱の上へ移動させます。
         // 未設定の場合は従来どおり破棄します。
-        if (TrashWarpManager.Instance != null && TrashWarpManager.Instance.TryWarpTrash(this))
+        if (TrashWarpManager.Instance != null && TrashWarpManager.Instance.TryWarpTrash(this, cleanStartedAt))
         {
             yield break;
         }
@@ -111,13 +116,12 @@ public class TrashObject : MonoBehaviour
     }
 
     /// <summary>
-    /// ワープ後にゴミ箱の上へ配置し、落下できる状態へ戻します。
+    /// ワープ後のゴミを表示し、落下できる状態へ戻します。
     /// </summary>
-    public void WarpToBin(Vector3 position, Quaternion rotation)
+    public void BeginBinDrop()
     {
         if (!isCleaned || isDisposed) return;
 
-        transform.SetPositionAndRotation(position, rotation);
         transform.localScale = initialScale;
 
         Collider col = GetComponent<Collider>();
@@ -129,9 +133,9 @@ public class TrashObject : MonoBehaviour
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
+            rb.isKinematic = false;
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
-            rb.isKinematic = false;
             rb.useGravity = true;
         }
     }
